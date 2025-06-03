@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@theme {
+   --color-shop-body: #1d1e28;
+   --color-shop-light: #fff;
+}
+
+@utility container {
+   margin: auto;
+   padding: 1.25rem;
+}
