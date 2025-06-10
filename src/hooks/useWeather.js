@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { LocationContext } from "../context";
 
 const useWeather = () => {
    const [weatherData, setweatherData] = useState({
@@ -21,6 +22,8 @@ const useWeather = () => {
    });
 
    const [error, setError] = useState(null);
+
+   const { selectedLocation } = useContext(LocationContext);
 
    const fetchWeatherData = async (longitude, latitude) => {
       try {
@@ -71,23 +74,30 @@ const useWeather = () => {
 
    useEffect(() => {
       setLoading({
+         ...loading,
          state: true,
          message: "Finding Location...",
       });
 
-      navigator.geolocation.getCurrentPosition(function (position) {
-         const lat = position.coords.latitude;
-         const lon = position.coords.longitude;
+      if (selectedLocation.latitude && selectedLocation.longitude) {
+         fetchWeatherData(
+            selectedLocation.longitude,
+            selectedLocation.latitude
+         );
+      } else {
+         navigator.geolocation.getCurrentPosition(function (position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
 
-         // Validation
-         if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-            setError(new Error("Invalid coordinates received."));
-            return;
-         }
+            if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+               setError(new Error("Invalid coordinates received."));
+               return;
+            }
 
-         fetchWeatherData(lon, lat); // ঠিক order: longitude, latitude
-      });
-   }, []);
+            fetchWeatherData(lon, lat);
+         });
+      }
+   }, [selectedLocation.latitude, selectedLocation.longitude]);
 
    return {
       weatherData,
